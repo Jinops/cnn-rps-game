@@ -6,7 +6,6 @@ import random
 import numpy as np
 from tensorflow.python.keras.models import load_model
 from enum import Enum
-from PIL import Image
 
 ####################
 width = 182 
@@ -45,6 +44,15 @@ def rps_game(my_hand, computer_hand):
       return "WIN"
     elif computer_hand == Rps.SCISSORS.value:
       return "DRAW"
+
+def get_hand_img_src(hand):
+  if hand == Rps.ROCK.value:
+    return "rock.png"
+  elif hand == Rps.SCISSORS.value:
+    return "scissors.png"
+  elif hand == Rps.PAPER.value:
+    return "paper.png"
+  return ""
 ####################
 
 pygame.init()
@@ -97,22 +105,18 @@ while True :
     if sec==0: 
         screen.blit(cam_img, player_hand_pos)
 
+        # get & draw computer hand
         computer_hand = random.randrange(0,3)
-        computer_img_src = None
-        if computer_hand == Rps.ROCK.value:
-          computer_img_src = "rock.png"
-        elif computer_hand == Rps.SCISSORS.value:
-          computer_img_src = "scissors.png"
-        elif computer_hand == Rps.PAPER.value:
-          computer_img_src = "paper.png"
-
+        computer_img_src = get_hand_img_src(computer_hand)
         computer_img = pygame.transform.scale(pygame.image.load(computer_img_src), hand_size)
         screen.blit(computer_img, computer_hand_pos)
 
+        # get hand
         cam_img_array = pygame.surfarray.array3d(pygame.transform.scale(cam_img, (width, height)))
         cam_img_array = cam_img_array.reshape((1,) + input_shape)
         my_hand_predict = np.argmax(model.predict(cam_img_array), axis=-1)[0]
         
+        #result
         result_text = font.render(rps_game(my_hand_predict, computer_hand), True, black)
         hands_text = font.render("%s vs %s" %(categories[computer_hand], categories[my_hand_predict]), True, black)
         screen.blit(hands_text, hands_pos)
@@ -120,6 +124,7 @@ while True :
         screen.blit(time_text, timer_pos)
 
         pygame.display.flip()
+
         pygame.time.delay(2000)
         pygame.draw.rect(screen, white, (0,450, 960, 190)) # result text bg
         ticks_timer=pygame.time.get_ticks()
