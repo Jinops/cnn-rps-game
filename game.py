@@ -6,12 +6,27 @@ import random
 import numpy as np
 from tensorflow.python.keras.models import load_model
 from enum import Enum
+from PIL import Image
 
+####################
+width = 182 
+height = 128 
+input_shape = (height, width, 3)
+categories = ["rock", "paper", "scissors"]
+
+def get_image_to_array(image_path):
+  image = Image.open(image_path)
+  image = image.resize((width, height))
+
+  im_arr = np.frombuffer(image.tobytes(), dtype=np.uint8)
+  im_arr = im_arr.reshape(input_shape)
+
+  return im_arr
 
 model = load_model("./model.h5")
 print(model.summary())
-
-
+####################
+####################
 class Rps(Enum):
   ROCK = 0
   PAPER = 1
@@ -41,7 +56,7 @@ def rps_game(my_hand, computer_hand):
       return "WIN"
     elif computer_hand == Rps.SCISSORS.value:
       return "DRAW"
-
+####################
 
 pygame.init()
 
@@ -52,6 +67,8 @@ computer_hand_pos = (100, 100)
 player_hand_pos = (500, 100)
 hand_size = (300, 300)
 timer_pos = (450, 160)
+
+time_sec = 3
 
 screen = pygame.display.set_mode( ( 960 , 640 ) ) # center: 480 * 320
 pygame.display.set_caption("Rock Paper Scissor!")
@@ -79,7 +96,7 @@ while True :
     screen.blit(cam_img, player_hand_pos)
 
     # draw timer
-    sec=1-(pygame.time.get_ticks()-ticks_timer)//1000
+    sec= time_sec - (pygame.time.get_ticks()-ticks_timer)//1000
     time_text = font.render(str(sec), True, black)
     pygame.draw.rect(screen, white, timer_pos + (30, 30)) # time text bg
     screen.blit(time_text, timer_pos)
@@ -99,15 +116,18 @@ while True :
         elif computer_hand == Rps.PAPER.value:
           computer_img_src = "paper.png"
 
-        print(computer_hand, computer_img_src)
-
         computer_img = pygame.transform.scale(pygame.image.load(computer_img_src), hand_size)
         screen.blit(computer_img, computer_hand_pos)
 
-        #predict = np.argmax(model.predict(computer_img_src), axis=-1)
-        print(model.predict(computer_img_src))
+        cam_img_array = pygame.surfarray.array3d(pygame.transform.scale(cam_img, (width, height)))
+        cam_img_array = cam_img_array.astype('float32')
+        cam_img_array /= 255
+        cam_img_array = cam_img_array.reshape((1,) + input_shape)
+        my_hand_predict = np.argmax(model.predict(cam_img_array), axis=-1)[0]
+        print(categories[my_hand_predict])
         
         
-        pygame.time.delay(1000)
+        pygame.time.delay(2000)
         ticks_timer=pygame.time.get_ticks()
+
 
