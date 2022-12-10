@@ -13,19 +13,8 @@ width = 182
 height = 128 
 input_shape = (height, width, 3)
 categories = ["rock", "paper", "scissors"]
-
-def get_image_to_array(image_path):
-  image = Image.open(image_path)
-  image = image.resize((width, height))
-
-  im_arr = np.frombuffer(image.tobytes(), dtype=np.uint8)
-  im_arr = im_arr.reshape(input_shape)
-
-  return im_arr
-
 model = load_model("./model.h5")
 print(model.summary())
-####################
 ####################
 class Rps(Enum):
   ROCK = 0
@@ -68,7 +57,7 @@ player_hand_pos = (500, 100)
 hand_size = (300, 300)
 timer_pos = (450, 160)
 result_pos = (420, 450)
-hands_pos = (360, 500)
+hands_pos = (350, 500)
 
 time_sec = 3
 
@@ -121,8 +110,6 @@ while True :
         screen.blit(computer_img, computer_hand_pos)
 
         cam_img_array = pygame.surfarray.array3d(pygame.transform.scale(cam_img, (width, height)))
-        cam_img_array = cam_img_array.astype('float32')
-        cam_img_array /= 255
         cam_img_array = cam_img_array.reshape((1,) + input_shape)
         my_hand_predict = np.argmax(model.predict(cam_img_array), axis=-1)[0]
         
