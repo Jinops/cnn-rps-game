@@ -67,6 +67,8 @@ computer_hand_pos = (100, 100)
 player_hand_pos = (500, 100)
 hand_size = (300, 300)
 timer_pos = (450, 160)
+result_pos = (420, 450)
+hands_pos = (360, 500)
 
 time_sec = 3
 
@@ -105,7 +107,6 @@ while True :
 
     if sec==0: 
         screen.blit(cam_img, player_hand_pos)
-        pygame.display.flip()
 
         computer_hand = random.randrange(0,3)
         computer_img_src = None
@@ -124,10 +125,16 @@ while True :
         cam_img_array /= 255
         cam_img_array = cam_img_array.reshape((1,) + input_shape)
         my_hand_predict = np.argmax(model.predict(cam_img_array), axis=-1)[0]
-        print(categories[my_hand_predict])
         
-        
+        result_text = font.render(rps_game(my_hand_predict, computer_hand), True, black)
+        hands_text = font.render("%s vs %s" %(categories[computer_hand], categories[my_hand_predict]), True, black)
+        screen.blit(hands_text, hands_pos)
+        screen.blit(result_text, result_pos)
+        screen.blit(time_text, timer_pos)
+
+        pygame.display.flip()
         pygame.time.delay(2000)
+        pygame.draw.rect(screen, white, (0,450, 960, 190)) # result text bg
         ticks_timer=pygame.time.get_ticks()
 
 
